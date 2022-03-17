@@ -1,1 +1,64 @@
---- {}
+---
+gssproxy::manage_packages: true
+gssproxy::packages:
+  - gssproxy
+gssproxy::packages_ensure: present
+
+gssproxy::manage_conf: true
+gssproxy::gssproxy_conf: /etc/gssproxy/gssproxy.conf
+gssproxy::gssproxy_conf_d: /etc/gssproxy
+gssproxy::gssproxy_conf_d_purge_unmanaged: true
+
+gssproxy::manage_system_services: true
+gssproxy::system_services:
+  - gssproxy
+gssproxy::system_services_ensure: running
+gssproxy::system_services_enable: true
+
+gssproxy::services:
+  'service/nfs-client':
+    settings:
+       mechs: krb5
+       cred_store:
+         - keytab:/etc/krb5.keytab
+         - ccache:FILE:/var/lib/gssproxy/clients/krb5cc_%U
+         - client_keytab:/var/lib/gssproxy/clients/%U.keytab
+       cred_usage:  initiate
+       allow_any_uid: 'yes'
+       trusted: 'yes'
+       euid: 0
+
+  'service/nfs-server':
+    settings:
+      mechs: krb5
+      socket: /run/gssproxy.sock
+      cred_store: keytab:/etc/krb5.keytab
+      trusted: 'yes'
+      kernel_nfsd: 'yes'
+      euid: 0
+
+gssproxy::defaults:
+  gssproxy:
+    allow_any_uid: NULL
+    allow_protocol_transition: NULL
+    allow_constrained_delegation: NULL
+    allow_client_ccache_sync: NULL
+    cred_store: NULL
+    cred_usage: NULL
+    debug: NULL
+    debug_level: NULL
+    enforce_flags: NULL
+    euid: NULL
+    filter_flags: NULL
+    impersonate: NULL
+    kernel_nfsd: NULL
+    krb5_principal: NULL
+    mechs: NULL
+    program: NULL
+    run_as_user: NULL
+    selinux_context: NULL
+    socket: NULL
+    syslog_status: NULL
+    trusted: NULL
+    'worker threads': NULL
+...

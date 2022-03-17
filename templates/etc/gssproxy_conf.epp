@@ -1,0 +1,29 @@
+<%- |
+  Hash[String, Variant[Hash[String, Data], Array[String[1]], Undef]] $gssproxy_sections = { 'gssproxy' => {}}
+| -%>
+#
+# This file managed by Puppet - DO NOT EDIT
+#
+<% $gssproxy_sections.keys.sort.each | $section | { -%>
+<% if $section { -%>
+
+[<%= $section %>]
+<% $gssproxy_sections[$section].keys.sort.each | $key | { -%>
+<% if $gssproxy_sections[$section][$key] != undef { -%>
+<% if type($gssproxy_sections[$section][$key], 'generalized') == Array { -%>
+<% $gssproxy_sections[$section][$key].each | $value | { -%>
+  <%= $key %>=<%= $value %>
+<% } -%>
+<% } elsif type($gssproxy_sections[$section][$key], 'generalized') == Tuple { -%>
+<% $gssproxy_sections[$section][$key].each | $value | { -%>
+  <%= $key %>=<%= $value %>
+<% } -%>
+<% } else { -%>
+  <%= $key %>=<%= $gssproxy_sections[$section][$key] %>
+<% } -%>
+<% } else { -%>
+# <%= $key %>=
+<% } -%>
+<% } -%>
+<% } -%>
+<% } -%>
