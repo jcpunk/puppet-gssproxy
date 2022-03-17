@@ -38,27 +38,26 @@ gssproxy::services:
       euid: 0
 
 gssproxy::defaults:
-  gssproxy:
-    allow_any_uid: NULL
-    allow_protocol_transition: NULL
-    allow_constrained_delegation: NULL
-    allow_client_ccache_sync: NULL
-    cred_store: NULL
-    cred_usage: NULL
-    debug: NULL
-    debug_level: NULL
-    enforce_flags: NULL
-    euid: NULL
-    filter_flags: NULL
-    impersonate: NULL
-    kernel_nfsd: NULL
-    krb5_principal: NULL
-    mechs: NULL
-    program: NULL
-    run_as_user: NULL
-    selinux_context: NULL
-    socket: NULL
-    syslog_status: NULL
-    trusted: NULL
-    'worker threads': NULL
+  allow_any_uid: NULL
+  allow_protocol_transition: NULL
+  allow_constrained_delegation: NULL
+  allow_client_ccache_sync: NULL
+  cred_store: NULL
+  cred_usage: NULL
+  debug: NULL
+  debug_level: NULL
+  enforce_flags: NULL
+  euid: NULL
+  filter_flags: NULL
+  impersonate: NULL
+  kernel_nfsd: NULL
+  krb5_principal: NULL
+  mechs: NULL
+  program: NULL
+  run_as_user: NULL
+  selinux_context: NULL
+  socket: NULL
+  syslog_status: NULL
+  trusted: NULL
+  'worker threads': NULL
 ...

@@ -37,6 +37,21 @@ By default any unmanaged services will be removed. You can disable this.
 
 ```puppet
 include gssproxy
+
+class { 'gssproxy':
+  gssproxy_services => {
+    'service/nfs-server' => {
+       'settings' => {
+         'mechs'       => 'krb5',
+         'socket'      => '/run/gssproxy.sock',
+         'cred_store'  => 'keytab:/etc/krb5.keytab',
+         'trusted'     => 'yes',
+         'kernel_nfsd' => 'yes',
+         'euid'        => 0,
+       }
+    }
+  }
+}
 ```
 
 #### Parameters
@@ -136,14 +151,14 @@ Default: true
 
 ##### <a name="defaults"></a>`defaults`
 
-Data type: `Hash[String, Hash[String, Data]]`
+Data type: `Hash[String, Variant[Data, Array[String[1]], Undef]]`
 
 The default settings for gssproxy.
 Default: No settings
 
 ##### <a name="gssproxy_services"></a>`gssproxy_services`
 
-Data type: `Optional[Hash[String, Variant[Hash[String, Data], Array[String[1]], Undef]]]`
+Data type: `Optional[Hash[String, Variant[Data, Array[String[1]], Undef]]]`
 
 A hash of gssproxy services to configure.
 Running gssproxy without any configured services is weird.
@@ -177,7 +192,7 @@ gssproxy::service { 'service/nfs-client':
       'client_keytab:/var/lib/gssproxy/clients/%U.keytab' ],
     'cred_usage'    => 'initiate',
     'allow_any_uid' => 'yes',
-    'trusted'       => 'yes',
+    'trusted'       => yes,
     'euid'          => 0,
 }
 
@@ -197,6 +212,7 @@ gssproxy::service { 'service/nfs-server':
 The following parameters are available in the `gssproxy::service` defined type:
 
 * [`section`](#section)
+* [`force_this_filename`](#force_this_filename)
 * [`filename`](#filename)
 * [`order`](#order)
 * [`gssproxy_conf_d`](#gssproxy_conf_d)
@@ -211,12 +227,22 @@ It defaults to the resource title.
 
 Default value: `$title`
 
+##### <a name="force_this_filename"></a>`force_this_filename`
+
+Data type: `Optional[Stdlib::Absolutepath]`
+
+Ignore any built in logic to try and simplify placement.
+Just use this filename.
+Default: unset
+
+Default value: ``undef``
+
 ##### <a name="filename"></a>`filename`
 
 Data type: `Optional[Pattern[/^\d\d-/]]`
 
 Name of the config file to write out.
-The filename must start with two digits and a - (/^\d\d-/) or gssproxy will not see it.
+The filename must start with two digits and a - or gssproxy will not see it.
 The filename must end in `.conf` or gssproxy will not see it.
 
 Default value: ``undef``
@@ -242,7 +268,7 @@ Default value: `$gssproxy::gssproxy_conf_d`
 
 ##### <a name="settings"></a>`settings`
 
-Data type: `Any`
+Data type: `Hash[String, Variant[Data, Array[String[1]], Undef]]`
 
 A key value hash of what to write out into the config file.
 A key that can be specified multiple times should set an

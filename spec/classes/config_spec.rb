@@ -47,7 +47,7 @@ describe 'gssproxy::config' do
             'gssproxy_conf' => '/some/path',
             'gssproxy_conf_d' => '/some/path.d',
             'gssproxy_conf_d_purge_unmanaged' => false,
-            'defaults' => { 'section' => { 'key' => 'value' } },
+            'defaults' => { 'key' => 'value' },
           }
         end
 
@@ -59,8 +59,7 @@ describe 'gssproxy::config' do
             .with_owner('root')
             .with_group('root')
             .with_mode('0600')
-            .without_content(%r{^\[gssproxy\]$})
-            .with_content(%r{^\[section\]$})
+            .with_content(%r{^\[gssproxy\]$})
             .with_content(%r{^  key=value$})
         }
         it {

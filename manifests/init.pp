@@ -64,26 +64,47 @@
 #
 # @example
 #   include gssproxy
+#
+#   class { 'gssproxy':
+#     gssproxy_services => {
+#       'service/nfs-server' => {
+#          'settings' => {
+#            'mechs'       => 'krb5',
+#            'socket'      => '/run/gssproxy.sock',
+#            'cred_store'  => 'keytab:/etc/krb5.keytab',
+#            'trusted'     => 'yes',
+#            'kernel_nfsd' => 'yes',
+#            'euid'        => 0,
+#          }
+#       }
+#     }
+#   }
 class gssproxy (
   Boolean $manage_packages,
   Array[String[1]] $packages,
   String $packages_ensure,
+
   Boolean $manage_conf,
   Stdlib::Absolutepath $gssproxy_conf,
   Stdlib::Absolutepath $gssproxy_conf_d,
   Boolean $gssproxy_conf_d_purge_unmanaged,
+
   Boolean $manage_system_services,
   Array[String[1]] $system_services,
   Stdlib::Ensure::Service $system_services_ensure,
   Boolean $system_services_enable,
 
-  Hash[String, Hash[String, Data]] $defaults,
+  Hash[String, Variant[Data, Array[String[1]], Undef]] $defaults,
 
-  Optional[Hash[String, Variant[Hash[String, Data], Array[String[1]], Undef]]] $gssproxy_services = undef,
+  Optional[Hash[String, Variant[Data, Array[String[1]], Undef]]] $gssproxy_services = undef,
 ) {
   contain '::gssproxy::install'
   contain '::gssproxy::config'
   contain '::gssproxy::system_service'
+
+  if $gssproxy_services {
+    create_resources('gssproxy::service', $gssproxy_services)
+  }
 
   # if you set ensure -> latest, the service should be kicked too
   Class['gssproxy::install'] -> Class['gssproxy::config'] ~> Class['gssproxy::system_service']

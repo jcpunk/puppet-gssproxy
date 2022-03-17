@@ -28,10 +28,8 @@ describe 'gssproxy::service' do
             .with_owner('root')
             .with_group('root')
             .with_mode('0600')
-            .without_content(%r{^\[gssproxy\]$})
-            .with_content(%r{^\[name/.var\]$})
-            .with_content(%r{^  key=value$})
             .with_notify('Class[Gssproxy::System_service]')
+            .with_content(/.*\[name\/.var\]\n  key=value\n.*/m)
         }
       end
 
@@ -48,7 +46,7 @@ describe 'gssproxy::service' do
       end
 
       context 'with filename params' do
-        let(:title) { 'name/.var' }
+        let(:title) { 'nAme/.var' }
         let(:params) do
           {
             'filename' => '11-thing.conf',
@@ -63,20 +61,40 @@ describe 'gssproxy::service' do
             .with_owner('root')
             .with_group('root')
             .with_mode('0600')
-            .without_content(%r{^\[gssproxy\]$})
-            .with_content(%r{^\[name/.var\]$})
-            .with_content(%r{^  key=value$})
             .with_notify('Class[Gssproxy::System_service]')
+            .with_content(/.*\[nAme\/.var\]\n  key=value\n.*/m)
         }
       end
 
+      context 'with force name params' do
+        let(:title) { 'name/.var' }
+        let(:params) do
+          {
+            'filename' => '11-thing.conf',
+            'settings' => { 'key' => 'value' },
+            'force_this_filename' => '/my/awesome/path.config',
+          }
+        end
+
+        it { is_expected.to compile }
+        it {
+          is_expected.to contain_file('/my/awesome/path.config')
+            .with_ensure('present')
+            .with_owner('root')
+            .with_group('root')
+            .with_mode('0600')
+            .with_notify('Class[Gssproxy::System_service]')
+            .with_content(/.*\[name\/.var\]\n  key=value\n.*/m)
+        }
+      end
 
       context 'with minimal interesting params' do
         let(:title) { 'namevar' }
         let(:params) do
           {
-            'section' => 'service/nfs-client',
+            'section' => 'service/NFS-client',
             'gssproxy_conf_d' => '/some/path',
+            'order' => 22,
             'settings' => {
               'mechs' => 'krb5',
               'cred_store' => [ 'keytab:/etc/krb5.keytab',
@@ -84,7 +102,7 @@ describe 'gssproxy::service' do
                                 'client_keytab:/var/lib/gssproxy/clients/%U.keytab' ],
               'cred_usage' => 'initiate',
               'allow_any_uid' => 'yes',
-              'trusted' => 'yes',
+              'trusted' => true,
               'euid' => 0,
             }
           }
@@ -92,22 +110,13 @@ describe 'gssproxy::service' do
 
         it { is_expected.to compile }
         it {
-          is_expected.to contain_file('/some/path/50-service_nfs-client.conf')
+          is_expected.to contain_file('/some/path/22-service_nfs-client.conf')
             .with_ensure('present')
             .with_owner('root')
             .with_group('root')
             .with_mode('0600')
-            .without_content(%r{^\[gssproxy\]$})
-            .with_content(%r{^\[service/nfs-client\]$})
-            .with_content(%r{^  mechs=krb5$})
-            .with_content(%r{^  cred_store=keytab:/etc/krb5.keytab$})
-            .with_content(%r{^  cred_store=ccache:FILE:/var/lib/gssproxy/clients/krb5cc_%U$})
-            .with_content(%r{^  cred_store=client_keytab:/var/lib/gssproxy/clients/%U.keytab$})
-            .with_content(%r{^  cred_usage=initiate$})
-            .with_content(%r{^  allow_any_uid=yes$})
-            .with_content(%r{^  trusted=yes$})
-            .with_content(%r{^  euid=0$})
             .with_notify('Class[Gssproxy::System_service]')
+            .with_content(/.*\[service\/NFS-client\]\n  allow_any_uid=yes\n  cred_store=keytab:\/etc\/krb5.keytab\n  cred_store=ccache:FILE:\/var\/lib\/gssproxy\/clients\/krb5cc_%U\n  cred_store=client_keytab:\/var\/lib\/gssproxy\/clients\/%U.keytab\n  cred_usage=initiate\n  euid=0\n  mechs=krb5\n  trusted=true\n.*/m)
         }
       end
     end

@@ -13,12 +13,9 @@ class gssproxy::config (
 
   if $manage_conf {
 
-    file { $gssproxy_conf:
-      ensure  => 'present',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0600',
-      content => epp('gssproxy/etc/gssproxy_conf.epp', { 'gssproxy_sections' => $defaults }),
+    gssproxy::service { 'gssproxy':
+      force_this_filename => $gssproxy_conf,
+      settings            => $defaults,
     }
 
     file { $gssproxy_conf_d:

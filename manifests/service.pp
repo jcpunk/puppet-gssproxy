@@ -10,9 +10,14 @@
 #   Name of the section within the config file.
 #   It defaults to the resource title.
 #
+# @param force_this_filename
+#   Ignore any built in logic to try and simplify placement.
+#   Just use this filename.
+#   Default: unset
+#
 # @param filename
 #   Name of the config file to write out.
-#   The filename must start with two digits and a - (/^\d\d-/) or gssproxy will not see it.
+#   The filename must start with two digits and a - or gssproxy will not see it.
 #   The filename must end in `.conf` or gssproxy will not see it.
 #
 # @param order
@@ -41,7 +46,7 @@
 #         'client_keytab:/var/lib/gssproxy/clients/%U.keytab' ],
 #       'cred_usage'    => 'initiate',
 #       'allow_any_uid' => 'yes',
-#       'trusted'       => 'yes',
+#       'trusted'       => yes,
 #       'euid'          => 0,
 #   }
 # 
@@ -55,29 +60,35 @@
 #       'euid'        => 0,
 #   }
 define gssproxy::service (
-  $settings,
+  Hash[String, Variant[Data, Array[String[1]], Undef]] $settings,
   String $section = $title,
   Optional[Pattern[/^\d\d-/]] $filename = undef,
   Integer $order = 50,
   Stdlib::Absolutepath $gssproxy_conf_d = $gssproxy::gssproxy_conf_d,
+  Optional[Stdlib::Absolutepath] $force_this_filename = undef
 ) {
   if ! defined(Class['gssproxy']) {
     fail('You must include the gssproxy base class before using any defined resources')
   }
 
-  if $filename == undef {
-    $filename_escape = regsubst(downcase($section), '[/\.]', '_', 'G')
-    $filename_real = "${order}-${filename_escape}.conf"
+  if $force_this_filename != undef {
+    $full_path = $force_this_filename
   } else {
-    $filename_real = $filename
+    if $filename == undef {
+      $filename_escape = regsubst(downcase($section), '[/\.]', '_', 'G')
+      $filename_real = "${order}-${filename_escape}.conf"
+    } else {
+      $filename_real = $filename
+    }
+    $full_path = "${gssproxy_conf_d}/${filename_real}"
   }
 
-  file { "${gssproxy_conf_d}/${filename_real}":
+  file { $full_path:
     ensure  => 'present',
     owner   => 'root',
     group   => 'root',
     mode    => '0600',
-    content => epp('gssproxy/etc/gssproxy_conf.epp', { 'gssproxy_sections' => { $section => $settings }}),
+    content => epp('gssproxy/etc/gssproxy/gssproxy_conf.epp', { 'gssproxy_sections' => { $section => $settings }}),
     notify  => Class['gssproxy::system_service']
   }
 
