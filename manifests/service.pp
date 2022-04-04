@@ -63,7 +63,7 @@ define gssproxy::service (
   Hash[String, Variant[Data, Array[String[1]], Undef]] $settings,
   String $section = $title,
   Optional[Pattern[/^\d\d-/]] $filename = undef,
-  Integer $order = 50,
+  Integer[0, 99] $order = 50,
   Stdlib::Absolutepath $gssproxy_conf_d = $gssproxy::gssproxy_conf_d,
   Optional[Stdlib::Absolutepath] $force_this_filename = undef
 ) {
